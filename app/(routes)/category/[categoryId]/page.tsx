@@ -1,4 +1,13 @@
+import getCategory from "@/actions/get-category";
+import getColors from "@/actions/get-colors";
 import getProducts from "@/actions/get-products";
+import getSizes from "@/actions/get-sizes";
+import Billboard from "@/components/billboard";
+import Container from "@/components/ui/container";
+import Filter from "./components/Filter";
+import NoResults from "@/components/ui/no-result";
+import ProductCard from "@/components/ui/product-card";
+import MobileFiters from "./components/MobileFiters";
 
 interface CategoryProps {
   params: {
@@ -11,14 +20,40 @@ interface CategoryProps {
 }
 
 const Category: React.FC<CategoryProps> = async ({ params, searchParams }) => {
-  const product = await getProducts({
+  const products = await getProducts({
     categoryId: params.categoryId,
     colorId: searchParams.colorId,
     sizeId: searchParams.sizeId,
     isFeatured: true,
   });
+  const sizes = await getSizes();
+  const colors = await getColors();
+  const category = await getCategory(params.categoryId);
 
-  return <div>This is the Category Page</div>;
+  return (
+    <div className="bg-white">
+      <Container>
+        <Billboard data={category.billboard} />
+        <div className="px-4 sm:px-6 lg:px-8 pb-24">
+          <div className="lg:grid lg:grid-cols-5 lg:gap-x-8">
+            <MobileFiters sizes={sizes} colors={colors} />
+            <div className="hidden lg:block">
+              <Filter valueKey="sizeId" name="Sizes" data={sizes} />
+              <Filter valueKey="colorId" name="Colors" data={colors} />
+            </div>
+            <div className="mt-6 lg:col-span-4 lg:mt-0">
+              {products.length === 0 && <NoResults />}
+              <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 gap-4">
+                {products.map((product) => (
+                  <ProductCard key={product.id} data={product} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Container>
+    </div>
+  );
 };
 
 export default Category;
